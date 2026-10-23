@@ -107,6 +107,14 @@ jobs:
             codesign -dv "$app" 2>&1 | grep -E 'Signature|Authority|TeamIdentifier' || true
           done
 
+      - name: Upload Windows installers for SignPath
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-unsigned
+          path: dist/*.exe
+          if-no-files-found: error
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.os }}
@@ -118,15 +126,57 @@ jobs:
             dist/*.deb
           if-no-files-found: error
 
-  release:
+  # Free Windows signing through SignPath Foundation. Runs once these exist:
+  # secret SIGNPATH_API_TOKEN, variables SIGNPATH_ORGANIZATION_ID, SIGNPATH_PROJECT_SLUG,
+  # SIGNPATH_SIGNING_POLICY_SLUG (and optional SIGNPATH_ARTIFACT_CONFIGURATION_SLUG).
+  sign-windows:
     needs: [version, build]
-    if: needs.version.outputs.release == 'true'
+    if: needs.version.outputs.release == 'true' && vars.SIGNPATH_ORGANIZATION_ID != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find unsigned artifact
+        id: art
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ID=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" --jq '.artifacts[] | select(.name=="win-unsigned") | .id')
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+
+      - uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
+          github-artifact-id: ${{ steps.art.outputs.id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 14400
+          output-artifact-directory: signed
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-signed
+          path: signed/*.exe
+          if-no-files-found: error
+
+  release:
+    needs: [version, build, sign-windows]
+    if: always() && needs.version.outputs.release == 'true' && needs.build.result == 'success' && needs.sign-windows.result != 'failure' && needs.sign-windows.result != 'cancelled'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
+          pattern: dist-*
           path: out
           merge-multiple: true
+
+      - name: Use signed Windows installers when available
+        if: needs.sign-windows.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: win-signed
+          path: out
 
       - name: Checksums
         run: cd out && sha256sum * > SHA256SUMS.txt
@@ -153,4 +203,8 @@ jobs:
             First launch on macOS (until the app is notarized): open the app once, then go to System Settings, Privacy & Security, and click Open Anyway.
             Windows (until the installer is signed): on the SmartScreen warning, click More info, then Run anyway.
 
-            Independent tool. Not affiliated with or endorsed by Anthropic.
+            Like it? [☕ Buy me a coffee](https://buymeacoffee.com/elty.belgium)
+
+            [Code signing policy](https://github.com/eltyBelgium/MultiClaude/blob/main/CODE_SIGNING_POLICY.md). Free code signing on Windows provided by SignPath.io, certificate by SignPath Foundation.
+
+            MIT licence. Independent tool. Not affiliated with or endorsed by Anthropic.

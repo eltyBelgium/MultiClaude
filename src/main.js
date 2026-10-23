@@ -219,12 +219,13 @@ function buildTray() {
       ...(items.length ? items : [{ label: 'No profiles yet', enabled: false }]),
       { type: 'separator' },
       { label: 'Manage profiles…', click: showWindow },
+      ...(config.donateUrl ? [{ label: '☕ Buy me a coffee', click: () => openSupport('donate') }] : []),
       {
         label: 'Support',
         submenu: [
           { label: 'Report a bug…', click: () => openSupport('bug') },
           { label: `Email ${config.supportEmail}`, click: () => openSupport('email') },
-          ...(config.donateUrl ? [{ label: 'Donate…', click: () => openSupport('donate') }] : []),
+          ...(config.donateUrl ? [{ label: '☕ Buy me a coffee…', click: () => openSupport('donate') }] : []),
           { type: 'separator' },
           { label: 'Check for updates', click: () => openSupport('releases') },
           { label: `MultiClaude ${app.getVersion()}`, enabled: false },

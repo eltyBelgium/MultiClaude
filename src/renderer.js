@@ -102,6 +102,7 @@ $('supportBtn').addEventListener('click', () => {
   $('supportPanel').hidden = !$('supportPanel').hidden;
   $('settings').hidden = true;
 });
+$('coffeeBtn').addEventListener('click', () => api.support('donate'));
 $('supportPanel').addEventListener('click', (e) => {
   const kind = e.target.dataset.s;
   if (kind) api.support(kind);
@@ -109,6 +110,7 @@ $('supportPanel').addEventListener('click', (e) => {
 api.supportLinks().then((s) => {
   $('emailBtn').textContent = `Email ${s.email}`;
   $('donateBtn').hidden = !s.donate;
+  $('coffeeBtn').hidden = !s.donate;
   $('versionLine').textContent = `MultiClaude ${s.version}. Independent tool, not affiliated with Anthropic.`;
 });
 $('pickClaude').addEventListener('click', async () => { const r = await api.pickClaude(); if (r.ok) load(); });

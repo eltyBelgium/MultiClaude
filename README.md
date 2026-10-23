@@ -1,5 +1,11 @@
 # MultiClaude
 
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-%E2%98%95-ffdd00?style=flat&labelColor=1a1a1a)](https://buymeacoffee.com/elty.belgium)
+[![Latest release](https://img.shields.io/github/v/release/eltyBelgium/MultiClaude)](https://github.com/eltyBelgium/MultiClaude/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+**[Download](https://github.com/eltyBelgium/MultiClaude/releases/latest)** · [Code signing policy](CODE_SIGNING_POLICY.md)
+
 Tray app that runs several isolated Claude Desktop accounts side by side. Built with Electron. Runs on macOS, Windows and Linux.
 
 ## Features
@@ -44,7 +50,11 @@ Output lands in `dist/`.
 
 ## Code signing
 
-Signing switches on in CI once the GitHub secrets exist. Without them, macOS builds are ad-hoc signed and Windows builds are unsigned.
+Signing switches on in CI once the GitHub secrets exist. Without them, macOS builds are ad-hoc signed and Windows builds are unsigned. See the [Code signing policy](CODE_SIGNING_POLICY.md).
+
+Windows signing through SignPath Foundation (free for open source) needs secret `SIGNPATH_API_TOKEN` and variables `SIGNPATH_ORGANIZATION_ID`, `SIGNPATH_PROJECT_SLUG`, `SIGNPATH_SIGNING_POLICY_SLUG` and optionally `SIGNPATH_ARTIFACT_CONFIGURATION_SLUG`. Each release then waits for manual approval in SignPath before it is published.
+
+Alternatively, Windows can be signed with Azure Artifact Signing:
 
 | Platform | Secret or variable | Value |
 |---|---|---|
@@ -64,7 +74,7 @@ The app registration needs the role "Artifact Signing Certificate Profile Signer
 
 ## Support
 
-The Support button and the tray Support menu link to GitHub issues, `sales@elty.be` and the latest release. Set `donateUrl` in `src/config.js` to show a Donate entry.
+The Support button and the tray Support menu link to GitHub issues, `sales@elty.be`, the latest release and [Buy Me a Coffee](https://buymeacoffee.com/elty.belgium). Links live in `src/config.js`.
 
 ## Requirements
 
@@ -79,4 +89,6 @@ Every push to `main` builds all installers. When the `version` in `package.json`
 
 Download the latest installers from the [Releases page](https://github.com/eltyBelgium/MultiClaude/releases/latest).
 
-Independent tool. Not affiliated with or endorsed by Anthropic.
+## License
+
+[MIT](LICENSE). Independent tool. Not affiliated with or endorsed by Anthropic.

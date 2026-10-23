@@ -1,12 +1,12 @@
 {
   "name": "claude-profiles",
   "productName": "Claude Profiles",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Run multiple isolated Claude Desktop accounts side by side",
   "main": "src/main.js",
   "author": "elty <sales@elty.be>",
   "homepage": "https://elty.be",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "start": "electron .",
     "dist:mac": "electron-builder --mac",

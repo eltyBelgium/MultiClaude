@@ -52,7 +52,7 @@ t('windows: candidate list covers per-user and machine-wide installs', () => {
 t('mac: candidate list covers system and user Applications', () => {
   const c = d.candidatesMac('/Users/x');
   assert(c.includes('/Applications/Claude.app'));
-  assert(c.includes('/Users/x/Applications/Claude.app'));
+  assert(c.includes(path.join('/Users/x', 'Applications', 'Claude.app')));
 });
 
 console.log(`${pass} passed, ${fail} failed`);

@@ -1,13 +1,16 @@
 name: Release
 
-# Builds macOS, Windows and Linux installers on every push to main.
-# When the version in package.json has no release yet, it publishes
-# GitHub Release v<version> with all installers attached.
-# To ship a new release: bump "version" in package.json and push.
+# Work happens on the dev branch: every push there (and every pull request)
+# runs the tests and builds all installers, but never publishes anything.
+# Merging into main publishes GitHub Release v<version> when that release
+# does not exist yet. To ship: bump "version" in package.json on dev,
+# then merge dev into main.
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     tags: ['v*']
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -27,9 +30,12 @@ jobs:
         run: |
           TAG="v$(node -p "require('./package.json').version")"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
-            # Tag exists: only release when this run was started by that tag.
-            [ "$GITHUB_REF" = "refs/tags/$TAG" ] && R=true || R=false
+          if [ "$GITHUB_REF" = "refs/tags/$TAG" ]; then
+            R=true
+          elif [ "$GITHUB_REF" != "refs/heads/main" ] || [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            R=false   # dev branch and pull requests only build and test
+          elif git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            R=false   # this version is already released
           else
             R=true
           fi

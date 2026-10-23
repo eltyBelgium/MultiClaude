@@ -39,3 +39,6 @@ input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 @media (max-width: 520px) { form { grid-template-columns: 1fr 44px; } form #hotkey, form button { grid-column: span 2; } }
 button.coffee { background: #ffdd00; color: #1a1a1a; font-weight: 600; }
 button.coffee:hover { filter: brightness(0.95); }
+.status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4a4a57; margin-right: 8px; vertical-align: middle; }
+li.running .status { background: #3fb950; box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.18); }
+li.running .meta { color: #3fb950; }

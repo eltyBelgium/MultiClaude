@@ -1,7 +1,7 @@
 {
   "name": "claude-profiles",
   "productName": "Claude Profiles",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Run multiple isolated Claude Desktop accounts side by side",
   "main": "src/main.js",
   "author": "elty <sales@elty.be>",
@@ -12,7 +12,7 @@
     "dist:mac": "electron-builder --mac",
     "dist:win": "electron-builder --win",
     "dist:linux": "electron-builder --linux",
-    "test": "node test/detect.test.js"
+    "test": "node test/detect.test.js && node test/running.test.js"
   },
   "devDependencies": {
     "electron": "^33.2.0",

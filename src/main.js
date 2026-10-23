@@ -6,6 +6,20 @@ const os = require('os');
 const { spawn, execFile } = require('child_process');
 const { detect, fromManual } = require('./detect');
 const config = require('./config');
+const runningMod = require('./running');
+
+// ---------- running instances ----------
+let runningNow = new Map(); // profile name -> pid
+async function refreshRunning() {
+  const next = await runningMod.running();
+  const changed = next.size !== runningNow.size || [...next.keys()].some((k) => !runningNow.has(k));
+  runningNow = next;
+  if (changed) {
+    if (tray) buildTray();
+    if (win && !win.isDestroyed()) win.webContents.send('running', [...next.keys()]);
+  }
+  return next;
+}
 
 // ---------- support ----------
 function supportLinks() {
@@ -187,7 +201,7 @@ function registerHotkeys() {
   for (const p of store.profiles) {
     if (!p.hotkey) continue;
     try {
-      if (!globalShortcut.register(p.hotkey, () => launchDesktop(p.name))) failed.push(p.hotkey);
+      if (!globalShortcut.register(p.hotkey, () => { launchDesktop(p.name); setTimeout(refreshRunning, 2500); })) failed.push(p.hotkey);
     } catch {
       failed.push(p.hotkey);
     }
@@ -207,9 +221,10 @@ function buildTray() {
     tray.on('click', () => (IS_MAC ? null : showWindow()));
   }
   const items = store.profiles.map((p) => ({
-    label: p.name + (p.hotkey ? `   ${p.hotkey}` : ''),
+    label: (runningNow.has(p.name) ? '● ' : '○ ') + p.name + (p.hotkey ? `   ${p.hotkey}` : ''),
     submenu: [
-      { label: 'Open Claude Desktop', click: () => launchDesktop(p.name) },
+      { label: runningNow.has(p.name) ? 'Show Claude Desktop' : 'Open Claude Desktop', click: () => launchDesktop(p.name) },
+      ...(runningNow.has(p.name) ? [{ label: 'Stop', click: () => stopProfile(p.name) }] : []),
       { label: 'Open Claude Code terminal', click: () => openCodeTerminal(p.name) },
       { label: 'Show data folder', click: () => shell.openPath(path.join(PROFILE_ROOT, p.name)) },
     ],
@@ -304,7 +319,20 @@ ipcMain.handle('profile:remove', (_e, name) => {
   return { ok: true };
 });
 
-ipcMain.handle('profile:launch', (_e, name) => launchDesktop(name));
+async function stopProfile(name) {
+  const n = await runningMod.stopProfile(name);
+  if (!n) { refreshRunning(); return { ok: false, error: `${name} is not running.` }; }
+  setTimeout(refreshRunning, 1500);
+  return { ok: true };
+}
+
+ipcMain.handle('profile:launch', async (_e, name) => {
+  const r = await launchDesktop(name);
+  setTimeout(refreshRunning, 2500);
+  return r;
+});
+ipcMain.handle('profile:stop', (_e, name) => stopProfile(name));
+ipcMain.handle('running', async () => [...(await refreshRunning()).keys()]);
 ipcMain.handle('profile:code', (_e, name) => openCodeTerminal(name));
 ipcMain.handle('profile:folder', (_e, name) => shell.openPath(dataDir(name, 'desktop').replace(/[\\/]desktop$/, '')));
 
@@ -339,6 +367,13 @@ if (!app.requestSingleInstanceLock()) {
     if (IS_MAC && app.dock) app.dock.hide();
     buildTray();
     registerHotkeys();
+    refreshRunning();
+    // Poll often while the window is open, slowly otherwise.
+    let tick = 0;
+    setInterval(() => {
+      tick++;
+      if ((win && win.isVisible()) || tick % 4 === 0) refreshRunning();
+    }, 4000);
     if (!store.profiles.length) showWindow();
   });
   app.on('window-all-closed', (e) => e.preventDefault());

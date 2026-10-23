@@ -74,7 +74,7 @@ The app registration needs the role "Artifact Signing Certificate Profile Signer
 
 ## Support
 
-The Support button and the tray Support menu link to GitHub issues, `sales@elty.be`, the latest release and [Buy Me a Coffee](https://buymeacoffee.com/elty.belgium). Links live in `src/config.js`.
+The Support panel in the app links to GitHub issues, `sales@elty.be`, the latest release and Buy Me a Coffee. The tray Support menu has the same links without the coffee button. Links live in `src/config.js`.
 
 ## Requirements
 

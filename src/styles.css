@@ -38,4 +38,3 @@ input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 @media (max-width: 520px) { form { grid-template-columns: 1fr 44px; } form #hotkey, form button { grid-column: span 2; } }
 button.coffee { background: #ffdd00; color: #1a1a1a; font-weight: 600; }
 button.coffee:hover { filter: brightness(0.95); }
-@media (max-width: 520px) { #coffeeBtn { display: none; } }

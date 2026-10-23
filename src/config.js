@@ -1,5 +1,4 @@
-// Support links shown in the tray menu and the Support panel.
-// Leave donateUrl empty to hide the Donate entry.
+// Support links. donateUrl is shown only in the Support panel; leave empty to hide it.
 module.exports = {
   repoUrl: 'https://github.com/eltyBelgium/MultiClaude',
   supportEmail: 'sales@elty.be',

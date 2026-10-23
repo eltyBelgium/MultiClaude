@@ -203,8 +203,6 @@ jobs:
             First launch on macOS (until the app is notarized): open the app once, then go to System Settings, Privacy & Security, and click Open Anyway.
             Windows (until the installer is signed): on the SmartScreen warning, click More info, then Run anyway.
 
-            Like it? [☕ Buy me a coffee](https://buymeacoffee.com/elty.belgium)
-
             [Code signing policy](https://github.com/eltyBelgium/MultiClaude/blob/main/CODE_SIGNING_POLICY.md). Free code signing on Windows provided by SignPath.io, certificate by SignPath Foundation.
 
             MIT licence. Independent tool. Not affiliated with or endorsed by Anthropic.

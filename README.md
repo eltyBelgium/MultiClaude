@@ -40,7 +40,31 @@ npm run dist:win     # .exe, build on Windows
 npm run dist:linux   # .AppImage and .deb, build on Linux
 ```
 
-Output lands in `dist/`. The builds are unsigned, so macOS Gatekeeper and Windows SmartScreen show a warning on first launch.
+Output lands in `dist/`.
+
+## Code signing
+
+Signing switches on in CI once the GitHub secrets exist. Without them, macOS builds are ad-hoc signed and Windows builds are unsigned.
+
+| Platform | Secret or variable | Value |
+|---|---|---|
+| macOS | secret `CSC_LINK` | Developer ID Application certificate as base64 `.p12` |
+| macOS | secret `CSC_KEY_PASSWORD` | Password of that `.p12` |
+| macOS | secret `APPLE_ID` | Apple ID email |
+| macOS | secret `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password from appleid.apple.com |
+| macOS | secret `APPLE_TEAM_ID` | 10-character Team ID |
+| Windows | secret `AZURE_TENANT_ID` | Entra tenant ID |
+| Windows | secret `AZURE_CLIENT_ID` | App registration client ID |
+| Windows | secret `AZURE_CLIENT_SECRET` | App registration client secret |
+| Windows | variable `AZURE_SIGNING_ENDPOINT` | Region endpoint, e.g. `https://weu.codesigning.azure.net` |
+| Windows | variable `AZURE_SIGNING_ACCOUNT` | Artifact Signing account name |
+| Windows | variable `AZURE_CERT_PROFILE` | Certificate profile name |
+
+The app registration needs the role "Artifact Signing Certificate Profile Signer" on the signing account.
+
+## Support
+
+The Support button and the tray Support menu link to GitHub issues, `sales@elty.be` and the latest release. Set `donateUrl` in `src/config.js` to show a Donate entry.
 
 ## Requirements
 

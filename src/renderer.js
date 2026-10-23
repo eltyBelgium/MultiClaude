@@ -1,5 +1,6 @@
 const $ = (id) => document.getElementById(id);
 let state = null;
+let runningSet = new Set();
 
 function msg(text, err = false) {
   $('msg').textContent = text || '';
@@ -42,22 +43,29 @@ function render() {
     li.innerHTML = `
       <div class="bar"></div>
       <div>
-        <div class="name"></div>
+        <div class="name"><span class="status"></span><span class="pname"></span></div>
         <div class="meta"></div>
       </div>
       <div class="actions">
         <button data-a="launch">Open</button>
+        <button data-a="stop" class="ghost">Stop</button>
         <button data-a="code" class="ghost">Code</button>
         <button data-a="folder" class="ghost">Folder</button>
         <button data-a="remove" class="danger">Remove</button>
       </div>`;
     li.querySelector('.bar').style.background = p.color;
-    li.querySelector('.name').textContent = p.name;
-    li.querySelector('.meta').textContent = p.hotkey ? `Hotkey ${p.hotkey}` : 'No hotkey';
+    const on = runningSet.has(p.name);
+    li.classList.toggle('running', on);
+    li.querySelector('.pname').textContent = p.name;
+    li.querySelector('.status').title = on ? 'Running' : 'Not running';
+    li.querySelector('.meta').textContent = (on ? 'Running' : 'Not running') + (p.hotkey ? ` · Hotkey ${p.hotkey}` : '');
+    li.querySelector('[data-a=launch]').textContent = on ? 'Show' : 'Open';
+    li.querySelector('[data-a=stop]').hidden = !on;
     li.querySelector('.actions').addEventListener('click', async (e) => {
       const a = e.target.dataset.a;
       if (!a) return;
       if (a === 'launch') { const r = await api.launch(p.name); msg(r.ok ? `Opened ${p.name}` : r.error, !r.ok); }
+      if (a === 'stop') { const r = await api.stop(p.name); msg(r.ok ? `Stopping ${p.name}…` : r.error, !r.ok); }
       if (a === 'code') { await api.code(p.name); msg(`Terminal opened for ${p.name}`); }
       if (a === 'folder') api.folder(p.name);
       if (a === 'remove') {
@@ -79,6 +87,7 @@ async function load() {
   $('root').textContent = state.root;
   $('startAtLogin').checked = !!state.settings.startAtLogin;
   if (!c) $('settings').hidden = false;
+  runningSet = new Set(await api.running());
   render();
 }
 
@@ -121,3 +130,8 @@ $('redetect').addEventListener('click', async () => {
 $('startAtLogin').addEventListener('change', (e) => api.startAtLogin(e.target.checked));
 
 load();
+
+api.onRunning((names) => {
+  runningSet = new Set(names);
+  if (state) render();
+});

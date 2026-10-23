@@ -5,8 +5,11 @@ const path = require('path');
 const d = require('../src/detect');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-'));
-let pass = 0;
-const t = (name, fn) => { fn(); pass++; console.log('ok', name); };
+let pass = 0, fail = 0;
+const t = (name, fn) => {
+  try { fn(); pass++; console.log('ok', name); }
+  catch (e) { fail++; console.log(`::error title=${name}::${String(e.message).replace(/\r?\n/g, ' | ')}`); }
+};
 
 t('linux: nothing installed returns null or a system install', () => {
   const r = d.detectLinux(tmp);
@@ -52,4 +55,5 @@ t('mac: candidate list covers system and user Applications', () => {
   assert(c.includes('/Users/x/Applications/Claude.app'));
 });
 
-console.log(`${pass} tests passed`);
+console.log(`${pass} passed, ${fail} failed`);
+process.exit(fail ? 1 : 0);

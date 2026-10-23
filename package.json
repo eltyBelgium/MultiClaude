@@ -1,7 +1,7 @@
 {
   "name": "claude-profiles",
   "productName": "Claude Profiles",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Run multiple isolated Claude Desktop accounts side by side",
   "main": "src/main.js",
   "author": "elty <sales@elty.be>",

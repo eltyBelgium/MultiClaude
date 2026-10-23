@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Claude Profiles</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="dot"></span>Claude Profiles</div>
+    <button id="settingsBtn" class="ghost" title="Settings">Settings</button>
+  </header>
+
+  <section id="settings" hidden>
+    <div class="row">
+      <div>
+        <div class="label">Claude Desktop</div>
+        <div id="claudePath" class="mono muted">Detecting…</div>
+      </div>
+      <div class="actions">
+        <button id="redetect" class="ghost">Search again</button>
+        <button id="pickClaude" class="ghost">Change</button>
+      </div>
+    </div>
+    <label class="row check"><input type="checkbox" id="startAtLogin"> Start at login</label>
+    <div class="muted small">Profile data: <span id="root" class="mono"></span></div>
+  </section>
+
+  <main>
+    <ul id="list"></ul>
+    <p id="empty" class="muted" hidden>No profiles yet. Add one below, then log in once in its window.</p>
+  </main>
+
+  <form id="addForm">
+    <input id="name" placeholder="Profile name, e.g. elty" autocomplete="off" required>
+    <input id="color" type="color" value="#d97757" title="Colour">
+    <input id="hotkey" placeholder="Hotkey (optional)" readonly title="Click, then press a key combination">
+    <button type="submit">Add</button>
+  </form>
+  <div id="msg" class="msg"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

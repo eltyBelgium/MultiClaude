@@ -1,0 +1,71 @@
+{
+  "name": "claude-profiles",
+  "productName": "Claude Profiles",
+  "version": "1.0.0",
+  "description": "Run multiple isolated Claude Desktop accounts side by side",
+  "main": "src/main.js",
+  "author": "elty <sales@elty.be>",
+  "homepage": "https://elty.be",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
+    "test": "node test/detect.test.js"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "be.elty.claudeprofiles",
+    "productName": "Claude Profiles",
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/icon.png",
+      "category": "public.app-category.productivity",
+      "extendInfo": {
+        "LSUIElement": true
+      }
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "ClaudeProfiles-Setup-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/icon.png",
+      "category": "Utility",
+      "maintainer": "elty <sales@elty.be>",
+      "artifactName": "ClaudeProfiles-${version}-${arch}.${ext}",
+      "executableName": "claude-profiles"
+    },
+    "publish": null,
+    "artifactName": "ClaudeProfiles-${version}-${arch}.${ext}",
+    "deb": {
+      "artifactName": "claude-profiles_${version}_${arch}.${ext}"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  }
+}

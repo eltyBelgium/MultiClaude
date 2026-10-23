@@ -10,5 +10,7 @@ contextBridge.exposeInMainWorld('api', {
   folder: (name) => ipcRenderer.invoke('profile:folder', name),
   pickClaude: () => ipcRenderer.invoke('settings:pickClaude'),
   redetect: () => ipcRenderer.invoke('settings:redetect'),
+  supportLinks: () => ipcRenderer.invoke('support:links'),
+  support: (kind) => ipcRenderer.invoke('support:open', kind),
   startAtLogin: (on) => ipcRenderer.invoke('settings:startAtLogin', on),
 });

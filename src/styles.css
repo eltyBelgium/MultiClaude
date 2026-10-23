@@ -24,6 +24,8 @@ form { display: grid; grid-template-columns: 1fr 44px 150px auto; gap: 8px; padd
 input { background: var(--panel); border: 1px solid var(--line); color: var(--text); border-radius: 7px; padding: 8px 10px; font: inherit; min-width: 0; }
 input[type=color] { padding: 2px; height: 36px; }
 input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.actions.left { justify-content: flex-start; }
+#supportPanel { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; background: var(--panel); }
 #settings { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; background: var(--panel); }
 .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .check { justify-content: flex-start; gap: 8px; }

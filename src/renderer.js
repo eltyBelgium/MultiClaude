@@ -94,7 +94,23 @@ $('addForm').addEventListener('submit', async (e) => {
 });
 
 hotkeyCapture($('hotkey'));
-$('settingsBtn').addEventListener('click', () => ($('settings').hidden = !$('settings').hidden));
+$('settingsBtn').addEventListener('click', () => {
+  $('settings').hidden = !$('settings').hidden;
+  $('supportPanel').hidden = true;
+});
+$('supportBtn').addEventListener('click', () => {
+  $('supportPanel').hidden = !$('supportPanel').hidden;
+  $('settings').hidden = true;
+});
+$('supportPanel').addEventListener('click', (e) => {
+  const kind = e.target.dataset.s;
+  if (kind) api.support(kind);
+});
+api.supportLinks().then((s) => {
+  $('emailBtn').textContent = `Email ${s.email}`;
+  $('donateBtn').hidden = !s.donate;
+  $('versionLine').textContent = `MultiClaude ${s.version}. Independent tool, not affiliated with Anthropic.`;
+});
 $('pickClaude').addEventListener('click', async () => { const r = await api.pickClaude(); if (r.ok) load(); });
 $('redetect').addEventListener('click', async () => {
   $('claudePath').textContent = 'Searching…';

@@ -1,7 +1,7 @@
 {
   "name": "claude-profiles",
   "productName": "Claude Profiles",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Run multiple isolated Claude Desktop accounts side by side",
   "main": "src/main.js",
   "author": "elty <sales@elty.be>",
@@ -35,7 +35,11 @@
       "category": "public.app-category.productivity",
       "extendInfo": {
         "LSUIElement": true
-      }
+      },
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "win": {
       "target": [
@@ -66,6 +70,7 @@
     },
     "directories": {
       "output": "dist"
-    }
+    },
+    "afterPack": "build/afterPack.js"
   }
 }

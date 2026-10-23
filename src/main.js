@@ -5,6 +5,28 @@ const fs = require('fs');
 const os = require('os');
 const { spawn, execFile } = require('child_process');
 const { detect, fromManual } = require('./detect');
+const config = require('./config');
+
+// ---------- support ----------
+function supportLinks() {
+  const v = app.getVersion();
+  const env = `MultiClaude ${v}, ${process.platform} ${os.release()} ${process.arch}`;
+  const claude = findClaude();
+  const body = `Describe the problem:\n\n\n---\n${env}\nClaude Desktop: ${claude ? claude.source : 'not found'}`;
+  return {
+    bug: `${config.repoUrl}/issues/new?title=${encodeURIComponent('Bug: ')}&body=${encodeURIComponent(body)}`,
+    email: `mailto:${config.supportEmail}?subject=${encodeURIComponent(`MultiClaude ${v} support`)}&body=${encodeURIComponent(body)}`,
+    releases: `${config.repoUrl}/releases/latest`,
+    donate: config.donateUrl,
+    website: config.websiteUrl,
+    version: v,
+  };
+}
+
+function openSupport(kind) {
+  const url = supportLinks()[kind];
+  if (url && /^(https:|mailto:)/.test(url)) shell.openExternal(url);
+}
 
 const IS_MAC = process.platform === 'darwin';
 const IS_WIN = process.platform === 'win32';
@@ -197,6 +219,17 @@ function buildTray() {
       ...(items.length ? items : [{ label: 'No profiles yet', enabled: false }]),
       { type: 'separator' },
       { label: 'Manage profiles…', click: showWindow },
+      {
+        label: 'Support',
+        submenu: [
+          { label: 'Report a bug…', click: () => openSupport('bug') },
+          { label: `Email ${config.supportEmail}`, click: () => openSupport('email') },
+          ...(config.donateUrl ? [{ label: 'Donate…', click: () => openSupport('donate') }] : []),
+          { type: 'separator' },
+          { label: 'Check for updates', click: () => openSupport('releases') },
+          { label: `MultiClaude ${app.getVersion()}`, enabled: false },
+        ],
+      },
       { label: 'Quit', click: () => { quitting = true; app.quit(); } },
     ])
   );
@@ -235,6 +268,12 @@ ipcMain.handle('state', () => ({
   root: PROFILE_ROOT,
   platform: process.platform,
 }));
+
+ipcMain.handle('support:links', () => {
+  const l = supportLinks();
+  return { email: config.supportEmail, donate: !!l.donate, version: l.version };
+});
+ipcMain.handle('support:open', (_e, kind) => openSupport(kind));
 
 ipcMain.handle('settings:redetect', () => {
   store.settings.claudePath = '';

@@ -20,7 +20,7 @@ jobs:
       tag: ${{ steps.v.outputs.tag }}
       release: ${{ steps.v.outputs.release }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - id: v
@@ -49,21 +49,63 @@ jobs:
             args: --linux AppImage deb --x64 --arm64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - run: npm ci
 
       - run: npm test
 
+      # Signing switches on per platform once its secrets exist.
+      # macOS: CSC_LINK, CSC_KEY_PASSWORD, APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID
+      # Windows: AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET (secrets) and
+      #          AZURE_SIGNING_ENDPOINT, AZURE_SIGNING_ACCOUNT, AZURE_CERT_PROFILE (variables)
       - name: Build installers
-        run: npx electron-builder ${{ matrix.args }} --publish never
+        shell: bash
+        run: |
+          EXTRA=()
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            if [ -n "$CSC_LINK" ]; then echo "macOS: signing with Developer ID"; else
+              echo "macOS: no certificate, ad-hoc signing"; unset CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID
+              export CSC_IDENTITY_AUTO_DISCOVERY=false; fi
+          fi
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            if [ -n "$AZURE_CLIENT_SECRET" ] && [ -n "$AZ_ENDPOINT" ]; then
+              echo "Windows: signing with Azure Artifact Signing"
+              EXTRA+=(-c.win.azureSignOptions.endpoint="$AZ_ENDPOINT"
+                      -c.win.azureSignOptions.codeSigningAccountName="$AZ_ACCOUNT"
+                      -c.win.azureSignOptions.certificateProfileName="$AZ_PROFILE")
+            else
+              echo "Windows: no Azure signing configured, building unsigned"
+              unset AZURE_TENANT_ID AZURE_CLIENT_ID AZURE_CLIENT_SECRET
+            fi
+          fi
+          npx electron-builder ${{ matrix.args }} --publish never "${EXTRA[@]}"
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZ_ENDPOINT: ${{ vars.AZURE_SIGNING_ENDPOINT }}
+          AZ_ACCOUNT: ${{ vars.AZURE_SIGNING_ACCOUNT }}
+          AZ_PROFILE: ${{ vars.AZURE_CERT_PROFILE }}
+
+      - name: Verify macOS signature
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          for app in dist/mac*/*.app; do
+            echo "== $app"; codesign --verify --deep --strict --verbose=2 "$app"
+            codesign -dv "$app" 2>&1 | grep -E 'Signature|Authority|TeamIdentifier' || true
+          done
 
       - uses: actions/upload-artifact@v4
         with:
@@ -108,6 +150,7 @@ jobs:
             | Linux (Ubuntu / Debian) | `claude-profiles_*_amd64.deb` (or `_arm64`) |
             | Linux (any distro) | `ClaudeProfiles-*-x86_64.AppImage` |
 
-            The builds are not code-signed. macOS: right-click the app and choose Open the first time. Windows: SmartScreen, click More info, then Run anyway.
+            First launch on macOS (until the app is notarized): open the app once, then go to System Settings, Privacy & Security, and click Open Anyway.
+            Windows (until the installer is signed): on the SmartScreen warning, click More info, then Run anyway.
 
             Independent tool. Not affiliated with or endorsed by Anthropic.

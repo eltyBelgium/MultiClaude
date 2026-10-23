@@ -9,8 +9,22 @@
 <body>
   <header>
     <div class="brand"><span class="dot"></span>Claude Profiles</div>
-    <button id="settingsBtn" class="ghost" title="Settings">Settings</button>
+    <div class="actions">
+      <button id="supportBtn" class="ghost" title="Support">Support</button>
+      <button id="settingsBtn" class="ghost" title="Settings">Settings</button>
+    </div>
   </header>
+
+  <section id="supportPanel" hidden>
+    <div class="label">Need help?</div>
+    <div class="actions left">
+      <button data-s="bug">Report a bug</button>
+      <button data-s="email" class="ghost" id="emailBtn">Email support</button>
+      <button data-s="donate" class="ghost" id="donateBtn" hidden>Donate</button>
+      <button data-s="releases" class="ghost">Check for updates</button>
+    </div>
+    <div class="muted small" id="versionLine"></div>
+  </section>
 
   <section id="settings" hidden>
     <div class="row">

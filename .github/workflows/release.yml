@@ -1,9 +1,12 @@
 name: Release
 
-# Push a tag like v1.0.0 to build macOS, Windows and Linux installers
-# and attach them to a GitHub Release. Can also be started by hand.
+# Builds macOS, Windows and Linux installers on every push to main.
+# When the version in package.json has no release yet, it publishes
+# GitHub Release v<version> with all installers attached.
+# To ship a new release: bump "version" in package.json and push.
 on:
   push:
+    branches: [main]
     tags: ['v*']
   workflow_dispatch:
 
@@ -11,6 +14,28 @@ permissions:
   contents: write
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.v.outputs.tag }}
+      release: ${{ steps.v.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: v
+        run: |
+          TAG="v$(node -p "require('./package.json').version")"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            # Tag exists: only release when this run was started by that tag.
+            [ "$GITHUB_REF" = "refs/tags/$TAG" ] && R=true || R=false
+          else
+            R=true
+          fi
+          echo "release=$R" >> "$GITHUB_OUTPUT"
+          echo "Version $TAG, release: $R"
+
   build:
     strategy:
       fail-fast: false
@@ -52,8 +77,8 @@ jobs:
           if-no-files-found: error
 
   release:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [version, build]
+    if: needs.version.outputs.release == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -66,6 +91,10 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: MultiClaude ${{ needs.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
           files: out/*
           generate_release_notes: true
           body: |

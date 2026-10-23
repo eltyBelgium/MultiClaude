@@ -1,4 +1,4 @@
-# Claude Profiles
+# MultiClaude
 
 Tray app that runs several isolated Claude Desktop accounts side by side. Built with Electron. Runs on macOS, Windows and Linux.
 
@@ -48,3 +48,11 @@ Output lands in `dist/`. The builds are unsigned, so macOS Gatekeeper and Window
 - Claude Desktop installed
 - Claude Code CLI (`claude`) in PATH for the Code button
 - Linux tray icon: GNOME needs the AppIndicator extension (installed by default on Ubuntu)
+
+## Releasing
+
+Every push to `main` builds all installers. When the `version` in `package.json` has no GitHub Release yet, the workflow publishes release `v<version>` with the installers and a `SHA256SUMS.txt` attached. To ship a new version, bump `version` and push.
+
+Download the latest installers from the [Releases page](https://github.com/eltyBelgium/MultiClaude/releases/latest).
+
+Independent tool. Not affiliated with or endorsed by Anthropic.
